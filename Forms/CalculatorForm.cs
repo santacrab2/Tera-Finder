@@ -20,7 +20,7 @@ namespace TeraFinder
             cmbGame.SelectedIndex = Editor.SAV.Game == (int)GameVersion.VL ? 1 : 0;
             txtTID.Text = $"{Editor.SAV.TrainerID7}";
             txtSID.Text = $"{Editor.SAV.TrainerSID7}";
-            if (!IsBlankSAV()) grpGameInfo.Enabled = false;
+           // if (!IsBlankSAV()) grpGameInfo.Enabled = false;
 
             txtSeed.Text = Editor.txtSeed.Text;
             cmbContent.SelectedIndex = Editor.cmbContent.SelectedIndex;
