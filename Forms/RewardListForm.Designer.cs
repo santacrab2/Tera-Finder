@@ -30,18 +30,18 @@
         {
             this.grpNoBoost = new System.Windows.Forms.GroupBox();
             this.gridNoBoost = new System.Windows.Forms.DataGridView();
-            this.grp1Boost = new System.Windows.Forms.GroupBox();
-            this.grid1Boost = new System.Windows.Forms.DataGridView();
-            this.grp2Boost = new System.Windows.Forms.GroupBox();
-            this.grid2Boost = new System.Windows.Forms.DataGridView();
-            this.grp3Boost = new System.Windows.Forms.GroupBox();
-            this.grid3Boost = new System.Windows.Forms.DataGridView();
             this.Items = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.grp1Boost = new System.Windows.Forms.GroupBox();
+            this.grid1Boost = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.grp2Boost = new System.Windows.Forms.GroupBox();
+            this.grid2Boost = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.grp3Boost = new System.Windows.Forms.GroupBox();
+            this.grid3Boost = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.grpNoBoost.SuspendLayout();
@@ -57,9 +57,11 @@
             // grpNoBoost
             // 
             this.grpNoBoost.Controls.Add(this.gridNoBoost);
-            this.grpNoBoost.Location = new System.Drawing.Point(27, 12);
+            this.grpNoBoost.Location = new System.Drawing.Point(24, 9);
+            this.grpNoBoost.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.grpNoBoost.Name = "grpNoBoost";
-            this.grpNoBoost.Size = new System.Drawing.Size(289, 639);
+            this.grpNoBoost.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.grpNoBoost.Size = new System.Drawing.Size(253, 694);
             this.grpNoBoost.TabIndex = 0;
             this.grpNoBoost.TabStop = false;
             this.grpNoBoost.Text = "No Sandwich Boost";
@@ -70,81 +72,13 @@
             this.gridNoBoost.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Items,
             this.Qty});
-            this.gridNoBoost.Location = new System.Drawing.Point(6, 26);
+            this.gridNoBoost.Location = new System.Drawing.Point(5, 20);
+            this.gridNoBoost.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.gridNoBoost.Name = "gridNoBoost";
             this.gridNoBoost.RowHeadersWidth = 51;
             this.gridNoBoost.RowTemplate.Height = 29;
-            this.gridNoBoost.Size = new System.Drawing.Size(277, 607);
+            this.gridNoBoost.Size = new System.Drawing.Size(242, 666);
             this.gridNoBoost.TabIndex = 0;
-            // 
-            // grp1Boost
-            // 
-            this.grp1Boost.Controls.Add(this.grid1Boost);
-            this.grp1Boost.Location = new System.Drawing.Point(322, 12);
-            this.grp1Boost.Name = "grp1Boost";
-            this.grp1Boost.Size = new System.Drawing.Size(289, 639);
-            this.grp1Boost.TabIndex = 1;
-            this.grp1Boost.TabStop = false;
-            this.grp1Boost.Text = "Sandwich Boost lv1";
-            // 
-            // grid1Boost
-            // 
-            this.grid1Boost.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.grid1Boost.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn1,
-            this.dataGridViewTextBoxColumn4});
-            this.grid1Boost.Location = new System.Drawing.Point(6, 26);
-            this.grid1Boost.Name = "grid1Boost";
-            this.grid1Boost.RowHeadersWidth = 51;
-            this.grid1Boost.RowTemplate.Height = 29;
-            this.grid1Boost.Size = new System.Drawing.Size(277, 607);
-            this.grid1Boost.TabIndex = 0;
-            // 
-            // grp2Boost
-            // 
-            this.grp2Boost.Controls.Add(this.grid2Boost);
-            this.grp2Boost.Location = new System.Drawing.Point(617, 12);
-            this.grp2Boost.Name = "grp2Boost";
-            this.grp2Boost.Size = new System.Drawing.Size(289, 639);
-            this.grp2Boost.TabIndex = 2;
-            this.grp2Boost.TabStop = false;
-            this.grp2Boost.Text = "Sandwich Boost lv2";
-            // 
-            // grid2Boost
-            // 
-            this.grid2Boost.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.grid2Boost.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn2,
-            this.dataGridViewTextBoxColumn5});
-            this.grid2Boost.Location = new System.Drawing.Point(6, 26);
-            this.grid2Boost.Name = "grid2Boost";
-            this.grid2Boost.RowHeadersWidth = 51;
-            this.grid2Boost.RowTemplate.Height = 29;
-            this.grid2Boost.Size = new System.Drawing.Size(277, 607);
-            this.grid2Boost.TabIndex = 0;
-            // 
-            // grp3Boost
-            // 
-            this.grp3Boost.Controls.Add(this.grid3Boost);
-            this.grp3Boost.Location = new System.Drawing.Point(912, 12);
-            this.grp3Boost.Name = "grp3Boost";
-            this.grp3Boost.Size = new System.Drawing.Size(289, 639);
-            this.grp3Boost.TabIndex = 3;
-            this.grp3Boost.TabStop = false;
-            this.grp3Boost.Text = "Sandwich Boost lv3";
-            // 
-            // grid3Boost
-            // 
-            this.grid3Boost.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.grid3Boost.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn3,
-            this.dataGridViewTextBoxColumn6});
-            this.grid3Boost.Location = new System.Drawing.Point(6, 26);
-            this.grid3Boost.Name = "grid3Boost";
-            this.grid3Boost.RowHeadersWidth = 51;
-            this.grid3Boost.RowTemplate.Height = 29;
-            this.grid3Boost.Size = new System.Drawing.Size(277, 607);
-            this.grid3Boost.TabIndex = 0;
             // 
             // Items
             // 
@@ -162,6 +96,32 @@
             this.Qty.ReadOnly = true;
             this.Qty.Width = 50;
             // 
+            // grp1Boost
+            // 
+            this.grp1Boost.Controls.Add(this.grid1Boost);
+            this.grp1Boost.Location = new System.Drawing.Point(282, 9);
+            this.grp1Boost.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.grp1Boost.Name = "grp1Boost";
+            this.grp1Boost.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.grp1Boost.Size = new System.Drawing.Size(253, 694);
+            this.grp1Boost.TabIndex = 1;
+            this.grp1Boost.TabStop = false;
+            this.grp1Boost.Text = "Sandwich Boost lv1";
+            // 
+            // grid1Boost
+            // 
+            this.grid1Boost.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.grid1Boost.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn1,
+            this.dataGridViewTextBoxColumn4});
+            this.grid1Boost.Location = new System.Drawing.Point(5, 20);
+            this.grid1Boost.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.grid1Boost.Name = "grid1Boost";
+            this.grid1Boost.RowHeadersWidth = 51;
+            this.grid1Boost.RowTemplate.Height = 29;
+            this.grid1Boost.Size = new System.Drawing.Size(242, 666);
+            this.grid1Boost.TabIndex = 0;
+            // 
             // dataGridViewTextBoxColumn1
             // 
             this.dataGridViewTextBoxColumn1.HeaderText = "Items";
@@ -178,6 +138,32 @@
             this.dataGridViewTextBoxColumn4.ReadOnly = true;
             this.dataGridViewTextBoxColumn4.Width = 50;
             // 
+            // grp2Boost
+            // 
+            this.grp2Boost.Controls.Add(this.grid2Boost);
+            this.grp2Boost.Location = new System.Drawing.Point(540, 9);
+            this.grp2Boost.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.grp2Boost.Name = "grp2Boost";
+            this.grp2Boost.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.grp2Boost.Size = new System.Drawing.Size(253, 694);
+            this.grp2Boost.TabIndex = 2;
+            this.grp2Boost.TabStop = false;
+            this.grp2Boost.Text = "Sandwich Boost lv2";
+            // 
+            // grid2Boost
+            // 
+            this.grid2Boost.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.grid2Boost.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn2,
+            this.dataGridViewTextBoxColumn5});
+            this.grid2Boost.Location = new System.Drawing.Point(5, 20);
+            this.grid2Boost.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.grid2Boost.Name = "grid2Boost";
+            this.grid2Boost.RowHeadersWidth = 51;
+            this.grid2Boost.RowTemplate.Height = 29;
+            this.grid2Boost.Size = new System.Drawing.Size(242, 666);
+            this.grid2Boost.TabIndex = 0;
+            // 
             // dataGridViewTextBoxColumn2
             // 
             this.dataGridViewTextBoxColumn2.HeaderText = "Items";
@@ -193,6 +179,32 @@
             this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
             this.dataGridViewTextBoxColumn5.ReadOnly = true;
             this.dataGridViewTextBoxColumn5.Width = 50;
+            // 
+            // grp3Boost
+            // 
+            this.grp3Boost.Controls.Add(this.grid3Boost);
+            this.grp3Boost.Location = new System.Drawing.Point(798, 9);
+            this.grp3Boost.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.grp3Boost.Name = "grp3Boost";
+            this.grp3Boost.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.grp3Boost.Size = new System.Drawing.Size(253, 694);
+            this.grp3Boost.TabIndex = 3;
+            this.grp3Boost.TabStop = false;
+            this.grp3Boost.Text = "Sandwich Boost lv3";
+            // 
+            // grid3Boost
+            // 
+            this.grid3Boost.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.grid3Boost.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn3,
+            this.dataGridViewTextBoxColumn6});
+            this.grid3Boost.Location = new System.Drawing.Point(5, 20);
+            this.grid3Boost.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.grid3Boost.Name = "grid3Boost";
+            this.grid3Boost.RowHeadersWidth = 51;
+            this.grid3Boost.RowTemplate.Height = 29;
+            this.grid3Boost.Size = new System.Drawing.Size(242, 666);
+            this.grid3Boost.TabIndex = 0;
             // 
             // dataGridViewTextBoxColumn3
             // 
@@ -212,15 +224,14 @@
             // 
             // RewardListForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1226, 663);
+            this.ClientSize = new System.Drawing.Size(1073, 706);
             this.Controls.Add(this.grp3Boost);
             this.Controls.Add(this.grp2Boost);
             this.Controls.Add(this.grp1Boost);
             this.Controls.Add(this.grpNoBoost);
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "RewardListForm";
             this.ShowIcon = false;
             this.Text = "Item Rewards";
