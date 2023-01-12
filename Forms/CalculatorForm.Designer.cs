@@ -107,6 +107,7 @@
             this.btnSavePk9 = new System.Windows.Forms.ToolStripMenuItem();
             this.btnToPkmEditor = new System.Windows.Forms.ToolStripMenuItem();
             this.btnSendToEditor = new System.Windows.Forms.ToolStripMenuItem();
+            this.lblFound = new System.Windows.Forms.Label();
             this.grpRaidDetails.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numFrames)).BeginInit();
             this.grpFilters.SuspendLayout();
@@ -162,7 +163,7 @@
             // showresults
             // 
             this.showresults.AutoSize = true;
-            this.showresults.Location = new System.Drawing.Point(119, 155);
+            this.showresults.Location = new System.Drawing.Point(119, 137);
             this.showresults.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.showresults.Name = "showresults";
             this.showresults.Size = new System.Drawing.Size(128, 19);
@@ -172,8 +173,7 @@
             // 
             // numFrames
             // 
-            this.numFrames.Location = new System.Drawing.Point(104, 68);
-            this.numFrames.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.numFrames.Location = new System.Drawing.Point(119, 73);
             this.numFrames.Maximum = new decimal(new int[] {
             -1,
             0,
@@ -195,8 +195,7 @@
             // 
             // btnSearch
             // 
-            this.btnSearch.Location = new System.Drawing.Point(23, 137);
-            this.btnSearch.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btnSearch.Location = new System.Drawing.Point(26, 165);
             this.btnSearch.Name = "btnSearch";
             this.btnSearch.Size = new System.Drawing.Size(234, 34);
             this.btnSearch.TabIndex = 5;
@@ -207,7 +206,7 @@
             // lblFrames
             // 
             this.lblFrames.AutoSize = true;
-            this.lblFrames.Location = new System.Drawing.Point(23, 69);
+            this.lblFrames.Location = new System.Drawing.Point(26, 74);
             this.lblFrames.Name = "lblFrames";
             this.lblFrames.Size = new System.Drawing.Size(64, 15);
             this.lblFrames.TabIndex = 1;
@@ -216,7 +215,7 @@
             // lblContent
             // 
             this.lblContent.AutoSize = true;
-            this.lblContent.Location = new System.Drawing.Point(23, 93);
+            this.lblContent.Location = new System.Drawing.Point(26, 106);
             this.lblContent.Name = "lblContent";
             this.lblContent.Size = new System.Drawing.Size(53, 15);
             this.lblContent.TabIndex = 2;
@@ -224,8 +223,7 @@
             // 
             // txtSeed
             // 
-            this.txtSeed.Location = new System.Drawing.Point(104, 42);
-            this.txtSeed.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.txtSeed.Location = new System.Drawing.Point(119, 38);
             this.txtSeed.MaxLength = 8;
             this.txtSeed.Name = "txtSeed";
             this.txtSeed.Size = new System.Drawing.Size(153, 23);
@@ -240,8 +238,7 @@
             "Black",
             "Event",
             "Event-Mighty"});
-            this.cmbContent.Location = new System.Drawing.Point(104, 92);
-            this.cmbContent.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.cmbContent.Location = new System.Drawing.Point(119, 105);
             this.cmbContent.Name = "cmbContent";
             this.cmbContent.Size = new System.Drawing.Size(153, 23);
             this.cmbContent.TabIndex = 1;
@@ -250,7 +247,7 @@
             // lblSeed
             // 
             this.lblSeed.AutoSize = true;
-            this.lblSeed.Location = new System.Drawing.Point(23, 45);
+            this.lblSeed.Location = new System.Drawing.Point(26, 42);
             this.lblSeed.Name = "lblSeed";
             this.lblSeed.Size = new System.Drawing.Size(35, 15);
             this.lblSeed.TabIndex = 1;
@@ -1031,7 +1028,7 @@
             this.btnToPkmEditor,
             this.btnSendToEditor});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(259, 136);
+            this.contextMenuStrip.Size = new System.Drawing.Size(313, 148);
             // 
             // btnViewRewards
             // 
@@ -1074,6 +1071,16 @@
             this.btnSendToEditor.Size = new System.Drawing.Size(258, 22);
             this.btnSendToEditor.Text = "Send Selected Result to Raid Editor";
             this.btnSendToEditor.Click += new System.EventHandler(this.btnSendToEditor_Click);
+            // 
+            // lblFound
+            // 
+            this.lblFound.AutoSize = true;
+            this.lblFound.Location = new System.Drawing.Point(6, 222);
+            this.lblFound.Name = "lblFound";
+            this.lblFound.Size = new System.Drawing.Size(53, 20);
+            this.lblFound.TabIndex = 12;
+            this.lblFound.Text = "Found:";
+            this.lblFound.Visible = false;
             // 
             // CalculatorForm
             // 
