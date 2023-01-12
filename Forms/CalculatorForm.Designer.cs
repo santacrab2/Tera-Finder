@@ -107,6 +107,7 @@
             this.btnSavePk9 = new System.Windows.Forms.ToolStripMenuItem();
             this.btnToPkmEditor = new System.Windows.Forms.ToolStripMenuItem();
             this.btnSendToEditor = new System.Windows.Forms.ToolStripMenuItem();
+            this.lblFound = new System.Windows.Forms.Label();
             this.grpRaidDetails.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numFrames)).BeginInit();
             this.grpFilters.SuspendLayout();
@@ -1070,6 +1071,16 @@
             this.btnSendToEditor.Size = new System.Drawing.Size(258, 22);
             this.btnSendToEditor.Text = "Send Selected Result to Raid Editor";
             this.btnSendToEditor.Click += new System.EventHandler(this.btnSendToEditor_Click);
+            // 
+            // lblFound
+            // 
+            this.lblFound.AutoSize = true;
+            this.lblFound.Location = new System.Drawing.Point(6, 222);
+            this.lblFound.Name = "lblFound";
+            this.lblFound.Size = new System.Drawing.Size(53, 20);
+            this.lblFound.TabIndex = 12;
+            this.lblFound.Text = "Found:";
+            this.lblFound.Visible = false;
             // 
             // CalculatorForm
             // 
