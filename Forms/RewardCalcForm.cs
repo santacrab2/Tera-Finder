@@ -408,5 +408,10 @@ namespace TeraFinder.Forms
         private void btnSaveSelectedTxt_Click(object sender, EventArgs e) => dataGrid.SaveSelectedTxt();
 
         private void btnSendSelectedRaid_Click(object sender, EventArgs e) => dataGrid.SendSelectedRaidEditor(this);
+
+        private void grpFilters_Enter(object sender, EventArgs e)
+        {
+
+        }
     }
 }
