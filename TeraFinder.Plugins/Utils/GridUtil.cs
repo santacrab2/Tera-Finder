@@ -163,10 +163,11 @@ public static class GridUtil
                     var sav = (SAV9SV)f.Editor.SAV.Clone();
                     sav.Game = (int)GetGameVersion(seed, groupid, selectedRows.ElementAt(0), f);
 
-                    var encounter = (int)content < 2 ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!) :
+                    var encounter = (int)content < 2 ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!, TeraRaidMapParent.Paldea) :
                         content is RaidContent.Event_Mighty ? TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Mighty!, groupid) :
                         TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Dist!, groupid);
-
+                    if (encounter is null)
+                        encounter = TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.KitakamiTera!, TeraRaidMapParent.Kitakami);
                     var res = TeraUtil.GenerateTeraEntity(sav, encounter!, content, seed, tid, sid, groupid);
                     var la = new LegalityAnalysis(res);
 
@@ -239,10 +240,11 @@ public static class GridUtil
                     var sav = (SAV9SV)f.Editor.SAV.Clone();
                     sav.Game = (int)GetGameVersion(seed, groupid, selectedRows.ElementAt(0), f);
 
-                    var encounter = (int)content < 2 ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!) :
+                    var encounter = (int)content < 2 ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!, TeraRaidMapParent.Paldea) :
                         content is RaidContent.Event_Mighty ? TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Mighty!) :
                         TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Dist!);
-
+                    if (encounter is null)
+                        encounter = TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.KitakamiTera!, TeraRaidMapParent.Kitakami);
                     var rngres = TeraUtil.CalcRNG(seed, Convert.ToUInt32(f.txtTID.Text, 10), Convert.ToUInt32(f.txtSID.Text, 10), content, encounter!, groupid);
 
                     var lvl0 = RewardUtil.GetRewardList(rngres, encounter!.FixedRewardHash, encounter!.LotteryRewardHash,
@@ -380,10 +382,11 @@ public static class GridUtil
                     var sav = (SAV9SV)f.Editor.SAV.Clone();
                     sav.Game = (int)GetGameVersion(seed, groupid, selectedRows.ElementAt(0), f);
 
-                    var encounter = (int)content < 2 ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!) :
+                    var encounter = (int)content < 2 ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!,TeraRaidMapParent.Paldea) :
                         content is RaidContent.Event_Mighty ? TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Mighty!, groupid) :
                         TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Dist!, groupid);
-
+                    if (encounter is null)
+                        encounter = TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.KitakamiTera!, TeraRaidMapParent.Kitakami);
                     var res = TeraUtil.GenerateTeraEntity(sav, encounter!, content, seed, tid, sid, groupid);
                     var la = new LegalityAnalysis(res);
 
@@ -426,10 +429,11 @@ public static class GridUtil
                 {
                     var sav = (SAV9SV)f.Editor.SAV.Clone();
                     sav.Game = (int)game;
-                    var encounter = content < RaidContent.Event ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!) :
+                    var encounter = content < RaidContent.Event ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!, TeraRaidMapParent.Paldea) :
                     content is RaidContent.Event_Mighty ? TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Mighty!) :
                         TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Dist!);
-
+                    if (encounter is null)
+                        encounter = TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.KitakamiTera!, TeraRaidMapParent.Kitakami);
                     if (encounter is not null)
                     {
                         var rngres = TeraUtil.CalcRNG(seed, Convert.ToUInt32(f.txtTID.Text, 10), Convert.ToUInt32(f.txtSID.Text, 10), content, encounter, groupid);
@@ -464,10 +468,11 @@ public static class GridUtil
                     var sav = (SAV9SV)f.Editor.SAV.Clone();
                     sav.Game = (int)game;
 
-                    var encounter = content < RaidContent.Event ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!) :
+                    var encounter = content < RaidContent.Event ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!, TeraRaidMapParent.Paldea) :
                     content is RaidContent.Event_Mighty ? TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Mighty!) :
                         TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Dist!);
-
+                    if (encounter is null)
+                        encounter = TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.KitakamiTera!, TeraRaidMapParent.Kitakami);
                     if (encounter is not null)
                     {
                         var rngres = TeraUtil.CalcRNG(seed, Convert.ToUInt32(f.txtTID.Text, 10), Convert.ToUInt32(f.txtSID.Text, 10), content, encounter, groupid);
@@ -509,10 +514,11 @@ public static class GridUtil
                         var sav = (SAV9SV)f.Editor.SAV.Clone();
                         sav.Game = (int)game;
 
-                        var encounter = content < RaidContent.Event ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!) :
+                        var encounter = content < RaidContent.Event ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!, TeraRaidMapParent.Paldea) :
                         content is RaidContent.Event_Mighty ? TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Mighty!) :
                             TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Dist!);
-
+                        if (encounter is null)
+                            encounter = TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.KitakamiTera!, TeraRaidMapParent.Kitakami);
                         if (encounter is not null)
                         {
                             var fixedlist = encounter.IsDistribution ? f.Editor.DistFixedRewards : f.Editor.TeraFixedRewards;
@@ -573,10 +579,11 @@ public static class GridUtil
                 {
                     var sav = (SAV9SV)f.Editor.SAV.Clone();
                     sav.Game = (int)game;
-                    var encounter = content < RaidContent.Event ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!) :
+                    var encounter = content < RaidContent.Event ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.Tera!, TeraRaidMapParent.Paldea) :
                     content is RaidContent.Event_Mighty ? TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Mighty!) :
                         TeraUtil.GetDistEncounter(seed, sav, progress, f.Editor.Dist!);
-
+                    if (encounter is null)
+                        encounter = TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), f.Editor.KitakamiTera!, TeraRaidMapParent.Kitakami);
                     if (encounter is not null)
                     {
                         var rngres = TeraUtil.CalcRNG(seed, Convert.ToUInt32(f.txtTID.Text, 10), Convert.ToUInt32(f.txtSID.Text, 10), content, encounter, groupid);

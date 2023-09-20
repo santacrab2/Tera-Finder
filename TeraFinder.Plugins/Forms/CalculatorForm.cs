@@ -627,10 +627,13 @@ public partial class CalculatorForm : Form
     private TeraDetails? CalcResult(ulong Seed, GameProgress progress, SAV9SV sav, RaidContent content, ulong calc, int groupid)
     {
         var seed = (uint)(Seed & 0xFFFFFFFF);
-        var encounter = content is RaidContent.Standard or RaidContent.Black ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), Editor.Tera!) :
+        var encounter = content is RaidContent.Standard or RaidContent.Black && Editor.cmbDens.SelectedIndex < 69 ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), Editor.Tera!, TeraRaidMapParent.Paldea) : content is RaidContent.Standard or RaidContent.Black ?
+            TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), Editor.KitakamiTera!,TeraRaidMapParent.Kitakami):
             content is RaidContent.Event_Mighty ? TeraUtil.GetDistEncounter(seed, sav, progress, Editor.Mighty!, groupid) : TeraUtil.GetDistEncounter(seed, sav, progress, Editor.Dist!, groupid);
 
         if (encounter is null)
+            
+        if(encounter is null)
             return null;
 
         return TeraUtil.CalcRNG(seed, sav.TrainerTID7, sav.TrainerSID7, content, encounter, groupid, calc);

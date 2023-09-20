@@ -498,9 +498,10 @@ public partial class RewardCalcForm : Form
     private RewardDetails? CalcResult(ulong Seed, GameProgress progress, SAV9SV sav, RaidContent content, ulong calc, bool accuratesearch, int boost, int groupid)
     {
         var seed = (uint)(Seed & 0xFFFFFFFF);
-        var encounter = content is RaidContent.Standard or RaidContent.Black ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), Editor.Tera!) :
+        var encounter = content is RaidContent.Standard or RaidContent.Black ? TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), Editor.Tera!, TeraRaidMapParent.Paldea) :
             content is RaidContent.Event_Mighty ? TeraUtil.GetDistEncounter(seed, sav, progress, Editor.Mighty!, groupid) : TeraUtil.GetDistEncounter(seed, sav, progress, Editor.Dist!, groupid);
-
+        if (encounter is null)
+            encounter = TeraUtil.GetTeraEncounter(seed, sav, TeraUtil.GetStars(seed, progress), Editor.KitakamiTera!, TeraRaidMapParent.Kitakami);
         if (encounter is null)
             return null;
 

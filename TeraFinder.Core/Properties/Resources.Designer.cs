@@ -3803,6 +3803,16 @@ namespace TeraFinder.Core.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] encounter_gem_kitakami {
+            get {
+                object obj = ResourceManager.GetObject("encounter_gem_kitakami", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] encounter_gem_paldea {
             get {
                 object obj = ResourceManager.GetObject("encounter_gem_paldea", resourceCulture);

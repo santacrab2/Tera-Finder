@@ -21,6 +21,7 @@ public class TeraPlugin : IPlugin
     public string Language = Properties.Settings.Default.def_language;
 
     public EncounterRaid9[]? Tera = null;
+    public EncounterRaid9[]? KitakamiTera = null;
     public EncounterRaid9[]? Dist = null;
     public EncounterRaid9[]? Mighty = null;
     public Dictionary<ulong, List<Reward>>? TeraFixedRewards = null;

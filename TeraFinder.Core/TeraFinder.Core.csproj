@@ -28,6 +28,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\encounter_gem_kitakami.pkl" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Resources\raid_default\encounter_gem_kitakami.pkl" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="..\LICENSE">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>

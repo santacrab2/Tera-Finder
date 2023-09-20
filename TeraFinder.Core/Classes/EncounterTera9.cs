@@ -49,9 +49,29 @@ public sealed record EncounterTera9 : IEncounterable, IEncounterConvertible<PK9>
     public string LongName => Name;
     public byte LevelMin => Level;
     public byte LevelMax => Level;
+    public required TeraRaidMapParent Map { get; init; }
+    public bool CanBeEncountered(uint seed) => Tera9RNG.IsMatchStarChoice(seed, Stars, RandRate, RandRateMinScarlet, RandRateMinViolet,Map);
 
-    public bool CanBeEncountered(uint seed) => Tera9RNG.IsMatchStarChoice(seed, Stars, RandRate, RandRateMinScarlet, RandRateMinViolet);
+    /// <summary>
+    /// Fetches the rate sum for the base ROM raid, depending on star count.
+    /// </summary>
+    /// <param name="star">Raid Difficulty</param>
+    /// <param name="map">Map the encounter originates on.</param>
+    /// <returns>Total rate value the game uses to call rand(x) with.</returns>
+    public static short GetRateTotalSL(int star, TeraRaidMapParent map) => map switch
+    {
+        TeraRaidMapParent.Paldea => GetRateTotalBaseSL(star),
+        TeraRaidMapParent.Kitakami => GetRateTotalKitakamiSL(star),
+        _ => 0,
+    };
 
+    /// <inheritdoc cref="GetRateTotalSL(int, TeraRaidMapParent)"/>"/>
+    public static short GetRateTotalVL(int star, TeraRaidMapParent map) => map switch
+    {
+        TeraRaidMapParent.Paldea => GetRateTotalBaseVL(star),
+        TeraRaidMapParent.Kitakami => GetRateTotalKitakamiVL(star),
+        _ => 0,
+    };
     /// <summary>
     /// Fetches the rate sum for the base ROM raid, depending on star count.
     /// </summary>
@@ -78,18 +98,38 @@ public sealed record EncounterTera9 : IEncounterable, IEncounterConvertible<PK9>
         6 => 6500,
         _ => 0,
     };
+    public static short GetRateTotalKitakamiSL(int star) => star switch
+    {
+        1 => 1500,
+        2 => 1500,
+        3 => 2500,
+        4 => 2100,
+        5 => 2250,
+        6 => 2475, // -99
+        _ => 0,
+    };
 
-    public static EncounterTera9[] GetArray(ReadOnlySpan<byte> data)
+    public static short GetRateTotalKitakamiVL(int star) => star switch
+    {
+        1 => 1500,
+        2 => 1500,
+        3 => 2500,
+        4 => 2100,
+        5 => 2250,
+        6 => 2574, // +99
+        _ => 0,
+    };
+    public static EncounterTera9[] GetArray(ReadOnlySpan<byte> data,TeraRaidMapParent map)
     {
         const int size = 0x30;
         var count = data.Length / size;
         var result = new EncounterTera9[count];
         for (int i = 0; i < result.Length; i++)
-            result[i] = ReadEncounter(data.Slice(i * size, size));
+            result[i] = ReadEncounter(data.Slice(i * size, size),map);
         return result;
     }
 
-    private static EncounterTera9 ReadEncounter(ReadOnlySpan<byte> data) => new()
+    private static EncounterTera9 ReadEncounter(ReadOnlySpan<byte> data,TeraRaidMapParent map) => new()
     {
         Species = BinaryPrimitives.ReadUInt16LittleEndian(data),
         Form = data[0x02],
@@ -113,6 +153,7 @@ public sealed record EncounterTera9 : IEncounterable, IEncounterConvertible<PK9>
         FixedRewardHash = BinaryPrimitives.ReadUInt64LittleEndian(data[0x1C..]),
         LotteryRewardHash = BinaryPrimitives.ReadUInt64LittleEndian(data[0x24..]),
         Item = (int)BinaryPrimitives.ReadUInt32LittleEndian(data[0x2C..]),
+        Map = map,
     };
 
     private static AbilityPermission GetAbility(byte b) => b switch

@@ -185,8 +185,9 @@ public static class TeraUtil
         var game = (GameVersion)sav.Game;
 
         var encounters = content is RaidContent.Event ? GetSAVDistEncounters(sav)[0] : content is RaidContent.Event_Mighty ? GetSAVDistEncounters(sav)[1] :
-            EncounterRaid9.GetEncounters(EncounterTera9.GetArray(Properties.Resources.encounter_gem_paldea));
+            EncounterRaid9.GetEncounters(EncounterTera9.GetArray(Properties.Resources.encounter_gem_paldea,TeraRaidMapParent.Paldea));
 
+           
         foreach (var encounter in encounters)
         {
             if (encounter.Species > 0 && (encounter.Version is GameVersion.SV || encounter.Version == game) && (stars == 0 || encounter.Stars == stars))
@@ -198,10 +199,23 @@ public static class TeraUtil
                     list.Add(str);
             }
         }
+        if (content is not RaidContent.Event or RaidContent.Event_Mighty)
+        {
+            foreach(var encounter in EncounterRaid9.GetEncounters(EncounterTera9.GetArray(Properties.Resources.encounter_gem_kitakami, TeraRaidMapParent.Kitakami)))
+            {
+                var forms = FormConverter.GetFormList(encounter.Species, GameInfo.GetStrings(language).Types, GameInfo.GetStrings(language).forms, GameInfo.GenderSymbolASCII, EntityContext.Gen9);
+                var names = GameInfo.GetStrings(language).Species;
+                var str = $"{names[encounter.Species]}{(forms.Length > 1 ? $"-{forms[encounter.Form]}" : "")}";
+                if (!list.Contains(str))
+                    list.Add(str);
+            }
+
+        }
         return list;
     }
 
-    public static EncounterRaid9[] GetAllTeraEncounters() => EncounterRaid9.GetEncounters(EncounterTera9.GetArray(Properties.Resources.encounter_gem_paldea));
+    public static EncounterRaid9[] GetAllTeraEncounters() => EncounterRaid9.GetEncounters(EncounterTera9.GetArray(Properties.Resources.encounter_gem_paldea, TeraRaidMapParent.Paldea));
+    public static EncounterRaid9[] GetAllKitakamiTeraEncounters() => EncounterRaid9.GetEncounters(EncounterTera9.GetArray(Properties.Resources.encounter_gem_kitakami, TeraRaidMapParent.Kitakami));
 
     public static EncounterRaid9[][] GetAllDistEncounters()
     {
@@ -228,17 +242,17 @@ public static class TeraUtil
         }
     }
 
-    public static EncounterRaid9? GetTeraEncounter(uint seed, SAV9SV sav, int stars, EncounterRaid9[] encounters)
+    public static EncounterRaid9? GetTeraEncounter(uint seed, SAV9SV sav, int stars, EncounterRaid9[] encounters, TeraRaidMapParent map)
     {
         var game = (GameVersion)sav.Game;
         var xoro = new Xoroshiro128Plus(seed);
         if (stars < 6) xoro.NextInt(100);
-        var max = game is GameVersion.SL ? EncounterTera9.GetRateTotalBaseSL(stars) : EncounterTera9.GetRateTotalBaseVL(stars);
+        var max = game is GameVersion.SL ? EncounterTera9.GetRateTotalSL(stars,map) : EncounterTera9.GetRateTotalVL(stars,map);
         var rateRand = (int)xoro.NextInt((uint)max);
         foreach (var encounter in encounters)
         {
             var min = game is GameVersion.SL ? encounter.RandRateMinScarlet : encounter.RandRateMinViolet;
-            if (encounter.Stars == stars && min >= 0 && (uint)(rateRand - min) < encounter.RandRate)
+            if (encounter.Stars == stars && (uint)(rateRand - min) < encounter.RandRate)
                 return encounter;
         }
         return null;
@@ -261,7 +275,7 @@ public static class TeraUtil
                 continue;
             var max = game is GameVersion.SL ? encounter.GetRandRateTotalScarlet(p) : encounter.GetRandRateTotalViolet(p);
             var min = game is GameVersion.SL ? encounter.GetRandRateMinScarlet(p) : encounter.GetRandRateMinViolet(p);
-            if (min >= 0 && max > 0)
+            if (max > 0)
             {
                 var xoro = new Xoroshiro128Plus(seed);
                 xoro.NextInt(100);
@@ -368,7 +382,7 @@ public static class TeraUtil
                     ((GameVersion)sav.Game is GameVersion.VL && enc.GetRandRateTotalViolet(p) > 0))
                     possibleGroups.Add(enc.Index);
 
-        var eventCount = content >= RaidContent.Event ? GetEventCount(sav.Raid, currRaid+1) : 0;
+        var eventCount = content >= RaidContent.Event ? GetEventCount(sav.RaidPaldea, currRaid+1) : 0;
 
         var priority = EventUtil.GetDeliveryPriority(sav);
         var groupid = priority is not null ? GetDeliveryGroupID(eventCount, priority.GroupID.Groups, possibleGroups) : 0;
@@ -437,4 +451,19 @@ public static class TeraUtil
         "North Province (Area 1)",
         "North Province (Area 2)",
     };
+    public static string[] DLCArea = new string[]
+   {
+        "",
+        "Kitakami Road",
+        "Apple Hills",
+        "Revelers Road",
+        "Oni Mountain",
+        "Infernal Pass",
+        "Crystal Pool",
+        "Wistful Fields",
+        "Mossfell Confluence",
+        "Fellhorn Gorge",
+        "Paradise Barrens",
+        "Kitakami Wilds",
+   };
 }
