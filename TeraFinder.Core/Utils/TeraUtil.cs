@@ -1,4 +1,5 @@
 ﻿using PKHeX.Core;
+using System.Diagnostics.Metrics;
 using System.Text;
 
 namespace TeraFinder.Core;
@@ -201,14 +202,19 @@ public static class TeraUtil
         }
         if (content is not RaidContent.Event or RaidContent.Event_Mighty)
         {
-            foreach(var encounter in EncounterRaid9.GetEncounters(EncounterTera9.GetArray(Properties.Resources.encounter_gem_kitakami, TeraRaidMapParent.Kitakami)))
+            
+            foreach (var encounter in EncounterRaid9.GetEncounters(EncounterTera9.GetArray(Properties.Resources.encounter_gem_kitakami, TeraRaidMapParent.Kitakami)))
             {
-                var forms = FormConverter.GetFormList(encounter.Species, GameInfo.GetStrings(language).Types, GameInfo.GetStrings(language).forms, GameInfo.GenderSymbolASCII, EntityContext.Gen9);
-                var names = GameInfo.GetStrings(language).Species;
-                var str = $"{names[encounter.Species]}{(forms.Length > 1 ? $"-{forms[encounter.Form]}" : "")}";
-                if (!list.Contains(str))
-                    list.Add(str);
+                if (encounter.Species > 0 && (encounter.Version is GameVersion.SV || encounter.Version == game) && (stars == 0 || encounter.Stars == stars))
+                {
+                    var forms = FormConverter.GetFormList(encounter.Species, GameInfo.GetStrings(language).Types, GameInfo.GetStrings(language).forms, GameInfo.GenderSymbolASCII, EntityContext.Gen9);
+                    var names = GameInfo.GetStrings(language).Species;
+                    var str = $"{names[encounter.Species]}{(forms.Length > 1 ? $"-{forms[encounter.Form]}" : "")}";
+                    if (!list.Contains(str))
+                        list.Add(str);
+                }
             }
+            
 
         }
         return list;
