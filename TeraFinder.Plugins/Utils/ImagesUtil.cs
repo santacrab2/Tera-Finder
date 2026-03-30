@@ -11,14 +11,14 @@ public static class ImagesUtil
     {
         SpriteName.AllowShinySprite = true;
         var file = pkm.Shiny > TeraShiny.No && pkm.Species < (ushort)Species.Sprigatito ?
-            'b' + SpriteName.GetResourceStringSprite(pkm.Species, pkm.Form, (int)pkm.Gender, (uint)(pkm.Species == (ushort)Species.Gholdengo ? 999 : 0), EntityContext.Gen9, true) :
-            'a' + SpriteName.GetResourceStringSprite(pkm.Species, pkm.Form, (int)pkm.Gender, (uint)(pkm.Species == (ushort)Species.Gholdengo ? 999 : 0), EntityContext.Gen9, false);
+            'b' + SpriteName.GetResourceStringSprite(pkm.Species, pkm.Form, (byte)pkm.Gender, (uint)(pkm.Species == (ushort)Species.Gholdengo ? 999 : 0), EntityContext.Gen9, true) :
+            'a' + SpriteName.GetResourceStringSprite(pkm.Species, pkm.Form, (byte)pkm.Gender, (uint)(pkm.Species == (ushort)Species.Gholdengo ? 999 : 0), EntityContext.Gen9, false);
 
         var sprite = (Image?)PKHeX.Drawing.PokeSprite.Properties.Resources.ResourceManager.GetObject(file);
 
         if (sprite is null)
         {
-            file = 'a' + SpriteName.GetResourceStringSprite(pkm.Species, pkm.Form, (int)pkm.Gender, (uint)(pkm.Species == (ushort)Species.Gholdengo ? 999 : 0), EntityContext.Gen9, false);
+            file = 'a' + SpriteName.GetResourceStringSprite(pkm.Species, pkm.Form, (byte)pkm.Gender, (uint)(pkm.Species == (ushort)Species.Gholdengo ? 999 : 0), EntityContext.Gen9, false);
             sprite = (Image?)PKHeX.Drawing.PokeSprite.Properties.Resources.ResourceManager.GetObject(file);
         }
 
@@ -31,7 +31,7 @@ public static class ImagesUtil
         if (!active && sprite is not null) sprite = ImageUtil.ToGrayscale(sprite);
 
         if(sprite is not null)
-            ImageUtil.BlendTransparentTo(sprite, TypeColor.GetTypeSpriteColor((byte)pkm.TeraType), 0xAF, 0x3740);
+            ImageUtil.BlendTransparentTo(sprite, TypeColor.GetTypeSpriteColor(pkm.TeraType), 0xAF, 0x3740);
 
         return sprite;
     }
@@ -111,8 +111,8 @@ public static class ImagesUtil
         // https://github.com/LegoFigure11/RaidCrawler/blob/d36475046c638fbc37fbeb0aaa001f3663273b9b/RaidCrawler.WinForms/MainWindow.cs#L1589
         var coordinates = new Point
         {
-            X = (int)Normalize(width, ((((map switch { TeraRaidMapParent.Kitakami => 2.766970605475146, TeraRaidMapParent.Blueberry => 0.2566504136675, _ => 1 }) * x) + (map switch { TeraRaidMapParent.Kitakami => 2.072021484, TeraRaidMapParent.Blueberry => 0.893932258207, _ => -248.08352352566726 })) * (map is not TeraRaidMapParent.Blueberry ? 512 : 1) / (map is not TeraRaidMapParent.Blueberry ? 5000 : 1)) + pointer.Width * map switch { TeraRaidMapParent.Paldea => 0.5, _ => -1 }, def),
-            Y = (int)Normalize(height, ((((map switch { TeraRaidMapParent.Kitakami => 2.5700782642623805, TeraRaidMapParent.Blueberry => 0.2559781068906, _ => 1 }) * y) + (map switch { TeraRaidMapParent.Kitakami => 5070.808599816581, TeraRaidMapParent.Blueberry => 511.5361519625, _ => 5505.240018 })) * (map is not TeraRaidMapParent.Blueberry ? 512 : 1) / (map is not TeraRaidMapParent.Blueberry ? 5000 : 1)) - pointer.Width, def),
+            X = (int)Normalize(width, ((((map switch { TeraRaidMapParent.Kitakami => 2.766970605475146, TeraRaidMapParent.Blueberry => 0.2566504136675, _ => 1 }) * x) + (map switch { TeraRaidMapParent.Kitakami => 2.072021484, TeraRaidMapParent.Blueberry => 0.893932258207, _ => -248.08352352566726 })) * (map is not TeraRaidMapParent.Blueberry ? 512 : 1) / (map is not TeraRaidMapParent.Blueberry ? 5000 : 1)) + pointer.Width * map switch { TeraRaidMapParent.Paldea => 0.5, TeraRaidMapParent.Blueberry => -0.2, _ => -1 }, def),
+            Y = (int)Normalize(height, ((((map switch { TeraRaidMapParent.Kitakami => 2.5700782642623805, TeraRaidMapParent.Blueberry => 0.2559781068906, _ => 1 }) * y) + (map switch { TeraRaidMapParent.Kitakami => 5070.808599816581, TeraRaidMapParent.Blueberry => 511.5361519625, _ => 5505.240018 })) * (map is not TeraRaidMapParent.Blueberry ? 512 : 1) / (map is not TeraRaidMapParent.Blueberry ? 5000 : 1)) - pointer.Height * map switch { TeraRaidMapParent.Blueberry => 0.7, _ => 1 }, def),
         };
 
         var mapImage = new Bitmap(pic.BackgroundImage!, new Size(pic.Width, pic.Height));

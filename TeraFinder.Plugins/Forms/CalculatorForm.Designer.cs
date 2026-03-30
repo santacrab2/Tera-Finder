@@ -95,6 +95,7 @@ partial class CalculatorForm
         nSpeMax = new NumericUpDown();
         dataGrid = new DataGridView();
         grpGameInfo = new GroupBox();
+        lblTime = new Label();
         txtSID = new TextBox();
         lblSID = new Label();
         txtTID = new TextBox();
@@ -110,6 +111,8 @@ partial class CalculatorForm
         btnToPkmEditor = new ToolStripMenuItem();
         btnSendToEditor = new ToolStripMenuItem();
         btnCopySeed = new ToolStripMenuItem();
+        btnSaveAllCsv = new ToolStripMenuItem();
+        btnSaveCsv = new ToolStripMenuItem();
         grpRaidDetails.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)numFrames).BeginInit();
         grpFilters.SuspendLayout();
@@ -266,16 +269,17 @@ partial class CalculatorForm
         // 
         cmbProgress.FormattingEnabled = true;
         cmbProgress.Items.AddRange(new object[] { "Beginning", "UnlockedTeraRaids", "Unlocked3Stars", "Unlocked4Stars", "Unlocked5Stars", "Unlocked6Stars" });
-        cmbProgress.Location = new Point(101, 79);
+        cmbProgress.Location = new Point(116, 80);
         cmbProgress.Margin = new Padding(3, 4, 3, 4);
         cmbProgress.Name = "cmbProgress";
-        cmbProgress.Size = new Size(174, 28);
+        cmbProgress.Size = new Size(196, 28);
         cmbProgress.TabIndex = 7;
+        cmbProgress.SelectedIndexChanged += cmbProgress_IndexChanged;
         // 
         // lblProgress
         // 
         lblProgress.AutoSize = true;
-        lblProgress.Location = new Point(21, 84);
+        lblProgress.Location = new Point(36, 85);
         lblProgress.Name = "lblProgress";
         lblProgress.Size = new Size(68, 20);
         lblProgress.TabIndex = 6;
@@ -331,7 +335,7 @@ partial class CalculatorForm
         grpFilters.Controls.Add(nSpaMax);
         grpFilters.Controls.Add(nSpdMax);
         grpFilters.Controls.Add(nSpeMax);
-        grpFilters.Location = new Point(666, 12);
+        grpFilters.Location = new Point(713, 12);
         grpFilters.Margin = new Padding(3, 4, 3, 4);
         grpFilters.Name = "grpFilters";
         grpFilters.Padding = new Padding(3, 4, 3, 4);
@@ -436,11 +440,12 @@ partial class CalculatorForm
         cmbSpecies.Name = "cmbSpecies";
         cmbSpecies.Size = new Size(194, 28);
         cmbSpecies.TabIndex = 23;
+        cmbSpecies.SelectedIndexChanged += cmbSpecies_IndexChanged;
         // 
         // cmbStars
         // 
         cmbStars.FormattingEnabled = true;
-        cmbStars.Items.AddRange(new object[] { "Any", "1S ☆", "2S ☆☆", "3S ☆☆☆", "4S ☆☆☆☆", "5S ☆☆☆☆☆", "6S ☆☆☆☆☆☆", "7S ☆☆☆☆☆☆☆" });
+        cmbStars.Items.AddRange(new object[] { "1S ☆", "2S ☆☆", "3S ☆☆☆", "4S ☆☆☆☆", "5S ☆☆☆☆☆", "6S ☆☆☆☆☆☆", "7S ☆☆☆☆☆☆☆" });
         cmbStars.Location = new Point(341, 35);
         cmbStars.Margin = new Padding(3, 4, 3, 4);
         cmbStars.Name = "cmbStars";
@@ -799,13 +804,13 @@ partial class CalculatorForm
         dataGrid.ReadOnly = true;
         dataGrid.RowHeadersVisible = false;
         dataGrid.RowHeadersWidth = 51;
-        dataGrid.RowTemplate.Height = 29;
-        dataGrid.Size = new Size(1466, 541);
+        dataGrid.Size = new Size(1513, 541);
         dataGrid.TabIndex = 34;
         dataGrid.MouseUp += dataGrid_MouseUp;
         // 
         // grpGameInfo
         // 
+        grpGameInfo.Controls.Add(lblTime);
         grpGameInfo.Controls.Add(lblFound);
         grpGameInfo.Controls.Add(txtSID);
         grpGameInfo.Controls.Add(lblSID);
@@ -819,24 +824,34 @@ partial class CalculatorForm
         grpGameInfo.Margin = new Padding(3, 4, 3, 4);
         grpGameInfo.Name = "grpGameInfo";
         grpGameInfo.Padding = new Padding(3, 4, 3, 4);
-        grpGameInfo.Size = new Size(307, 245);
+        grpGameInfo.Size = new Size(354, 245);
         grpGameInfo.TabIndex = 2;
         grpGameInfo.TabStop = false;
         grpGameInfo.Text = "Game Info";
         // 
+        // lblTime
+        // 
+        lblTime.AutoSize = true;
+        lblTime.Location = new Point(207, 213);
+        lblTime.Name = "lblTime";
+        lblTime.Size = new Size(20, 20);
+        lblTime.TabIndex = 35;
+        lblTime.Text = "T:";
+        lblTime.Visible = false;
+        // 
         // txtSID
         // 
-        txtSID.Location = new Point(101, 153);
+        txtSID.Location = new Point(116, 154);
         txtSID.Margin = new Padding(3, 4, 3, 4);
         txtSID.Name = "txtSID";
-        txtSID.Size = new Size(174, 27);
+        txtSID.Size = new Size(196, 27);
         txtSID.TabIndex = 9;
         txtSID.KeyPress += txtID_KeyPress;
         // 
         // lblSID
         // 
         lblSID.AutoSize = true;
-        lblSID.Location = new Point(21, 156);
+        lblSID.Location = new Point(36, 157);
         lblSID.Name = "lblSID";
         lblSID.Size = new Size(35, 20);
         lblSID.TabIndex = 10;
@@ -844,17 +859,17 @@ partial class CalculatorForm
         // 
         // txtTID
         // 
-        txtTID.Location = new Point(101, 116);
+        txtTID.Location = new Point(116, 117);
         txtTID.Margin = new Padding(3, 4, 3, 4);
         txtTID.Name = "txtTID";
-        txtTID.Size = new Size(174, 27);
+        txtTID.Size = new Size(196, 27);
         txtTID.TabIndex = 8;
         txtTID.KeyPress += txtID_KeyPress;
         // 
         // lblTID
         // 
         lblTID.AutoSize = true;
-        lblTID.Location = new Point(21, 119);
+        lblTID.Location = new Point(36, 120);
         lblTID.Name = "lblTID";
         lblTID.Size = new Size(35, 20);
         lblTID.TabIndex = 8;
@@ -863,7 +878,7 @@ partial class CalculatorForm
         // lblGame
         // 
         lblGame.AutoSize = true;
-        lblGame.Location = new Point(21, 45);
+        lblGame.Location = new Point(36, 46);
         lblGame.Name = "lblGame";
         lblGame.Size = new Size(51, 20);
         lblGame.TabIndex = 1;
@@ -873,10 +888,10 @@ partial class CalculatorForm
         // 
         cmbGame.FormattingEnabled = true;
         cmbGame.Items.AddRange(new object[] { "Scarlet", "Violet" });
-        cmbGame.Location = new Point(101, 40);
+        cmbGame.Location = new Point(116, 41);
         cmbGame.Margin = new Padding(3, 4, 3, 4);
         cmbGame.Name = "cmbGame";
-        cmbGame.Size = new Size(174, 28);
+        cmbGame.Size = new Size(196, 28);
         cmbGame.TabIndex = 6;
         // 
         // toolTip
@@ -891,9 +906,9 @@ partial class CalculatorForm
         // contextMenuStrip
         // 
         contextMenuStrip.ImageScalingSize = new Size(20, 20);
-        contextMenuStrip.Items.AddRange(new ToolStripItem[] { btnViewRewards, btnSaveAll, btnSave, btnSavePk9, btnToPkmEditor, btnSendToEditor, btnCopySeed });
+        contextMenuStrip.Items.AddRange(new ToolStripItem[] { btnViewRewards, btnSaveAll, btnSaveAllCsv, btnSave, btnSaveCsv, btnSavePk9, btnToPkmEditor, btnSendToEditor, btnCopySeed });
         contextMenuStrip.Name = "contextMenuStrip";
-        contextMenuStrip.Size = new Size(313, 200);
+        contextMenuStrip.Size = new Size(313, 248);
         // 
         // btnViewRewards
         // 
@@ -944,11 +959,25 @@ partial class CalculatorForm
         btnCopySeed.Text = "Copy Seed";
         btnCopySeed.Click += btnCopySeed_Click;
         // 
+        // btnSaveAllCsv
+        // 
+        btnSaveAllCsv.Name = "btnSaveAllCsv";
+        btnSaveAllCsv.Size = new Size(312, 24);
+        btnSaveAllCsv.Text = "Save All Results as CSV";
+        btnSaveAllCsv.Click += btnSaveAllCSV_Click;
+        // 
+        // btnSaveCsv
+        // 
+        btnSaveCsv.Name = "btnSaveCsv";
+        btnSaveCsv.Size = new Size(312, 24);
+        btnSaveCsv.Text = "Save Selected Results as CSV";
+        btnSaveCsv.Click += btnSaveCSV_Click;
+        // 
         // CalculatorForm
         // 
         AutoScaleDimensions = new SizeF(8F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(1483, 811);
+        ClientSize = new Size(1530, 811);
         Controls.Add(grpGameInfo);
         Controls.Add(dataGrid);
         Controls.Add(grpFilters);
@@ -1066,4 +1095,7 @@ partial class CalculatorForm
     private Label lblMap;
     private ComboBox cmbMap;
     private ToolStripMenuItem btnCopySeed;
+    private Label lblTime;
+    private ToolStripMenuItem btnSaveAllCsv;
+    private ToolStripMenuItem btnSaveCsv;
 }

@@ -6,19 +6,20 @@ namespace TeraFinder.Plugins;
 public partial class CheckerForm : Form
 {
     private readonly PK9 PKM = null!;
-    private readonly SAV9SV SAV;
     private Dictionary<string, string> Strings = null!;
 
-    public CheckerForm(PKM pk, SAV9SV sav, string language)
+    private readonly IEncounterRaidCollection RaidCollection;
+
+    public CheckerForm(ITFPlugin container, PKM pk)
     {
         InitializeComponent();
         GenerateDictionary();
-        TranslateDictionary(language);
-        this.TranslateInterface(language);
+        TranslateDictionary(container.Language);
+        this.TranslateInterface(container.Language);
 
-        var species = GameInfo.GetStrings(language).specieslist;
-        var natures = GameInfo.GetStrings(language).natures;
-        var types = GameInfo.GetStrings(language).types;
+        var species = GameInfo.GetStrings(container.Language).specieslist;
+        var natures = GameInfo.GetStrings(container.Language).natures;
+        var types = GameInfo.GetStrings(container.Language).types;
         cmbSpecies.Items.Clear();
         cmbSpecies.Items.AddRange(species);
         cmbNature.Items.Clear();
@@ -26,7 +27,8 @@ public partial class CheckerForm : Form
         cmbTera.Items.Clear();
         cmbTera.Items.AddRange(types);
 
-        SAV = sav;
+        RaidCollection = container;
+
         PKM = (PK9)pk;
         txtTid.Text = $"{PKM.TrainerTID7}";
         txtSid.Text = $"{PKM.TrainerSID7}";
@@ -39,7 +41,7 @@ public partial class CheckerForm : Form
         numSpD.Value = PKM.IV_SPD;
         numSpe.Value = PKM.IV_SPE;
         cmbSpecies.SelectedIndex = PKM.Species;
-        cmbNature.SelectedIndex = PKM.Nature;
+        cmbNature.SelectedIndex = (int)PKM.Nature;
         cmbTera.SelectedIndex = (int)PKM.TeraTypeOriginal;
         numHeight.Value = PKM.HeightScalar;
         numWeight.Value = PKM.WeightScalar;
@@ -87,13 +89,13 @@ public partial class CheckerForm : Form
         var spa = (int)numSpA.Value;
         var spd = (int)numSpD.Value;
         var spe = (int)numSpe.Value;
-        var nature = cmbNature.SelectedIndex;
+        var nature = (Nature)cmbNature.SelectedIndex;
         var tera = cmbTera.SelectedIndex;
         var height = (byte)numHeight.Value;
         var weight = (byte)numWeight.Value;
         var scale = (byte)numScale.Value;
 
-        var pk = new PK9(PKM.Data)
+        var pk = new PK9(PKM.Data.ToArray())
         {
             Species = species,
             EncryptionConstant = ec,
@@ -114,19 +116,140 @@ public partial class CheckerForm : Form
         };
 
         var seed = Tera9RNG.GetOriginalSeed(pk);
-        var legality = new LegalityAnalysis(pk);
 
-        if (legality.Valid)
+        //Standard Raids Check
+        for (var map = TeraRaidMapParent.Paldea; map <= TeraRaidMapParent.Blueberry; map++)
         {
-            if (legality.EncounterMatch is PKHeX.Core.EncounterDist9)
-                txtSeed.Text = $"{seed:X8} ({Strings["RaidContent.Event"]})";
-            else if (legality.EncounterMatch is PKHeX.Core.EncounterMight9)
-                txtSeed.Text = $"{seed:X8} ({Strings["RaidContent.Event_Mighty"]})";
-            else
-                txtSeed.Text = (byte)((dynamic)legality.EncounterMatch).Stars == 6 ?
-                    $"{seed:X8} ({Strings["RaidContent.Black"]})" : $"{seed:X8} ({Strings["RaidContent.Standard"]})";
+            for (var progress = GameProgress.UnlockedTeraRaids; progress <= GameProgress.Unlocked6Stars; progress++)
+            {
+                for (var version = GameVersion.SL; version <= GameVersion.VL; version++)
+                {
+                    var encounters = map switch
+                    {
+                        TeraRaidMapParent.Paldea => RaidCollection.Paldea,
+                        TeraRaidMapParent.Kitakami => RaidCollection.Kitakami,
+                        TeraRaidMapParent.Blueberry => RaidCollection.Blueberry,
+                        _ => throw new NotImplementedException(nameof(map)),
+                    };
+                    if (EncounterRaidTF9.TryGenerateTeraDetails(seed, encounters, version, progress, EventProgress.Stage0, RaidContent.Standard, map, pk.ID32, 0, out var encounter, out var result))
+                    {
+                        if (CompareResult(pk, result!.Value))
+                        {
+                            SetReultText(seed, encounter);
+                            return;
+                        }
+                    }
+                }
+            }
         }
-        else
-            txtSeed.Text = $"{seed:X8} ({Strings["RaidContent.Invalid"]})";
+
+        //Black Raids Check
+        for (var map = TeraRaidMapParent.Paldea; map <= TeraRaidMapParent.Blueberry; map++)
+        {
+            for (var version = GameVersion.SL; version <= GameVersion.VL; version++)
+            {
+                var encounters = map switch
+                {
+                    TeraRaidMapParent.Paldea => RaidCollection.PaldeaBlack,
+                    TeraRaidMapParent.Kitakami => RaidCollection.KitakamiBlack,
+                    TeraRaidMapParent.Blueberry => RaidCollection.BlueberryBlack,
+                    _ => throw new NotImplementedException(nameof(map))
+                };
+                if (EncounterRaidTF9.TryGenerateTeraDetails(seed, encounters, version, GameProgress.Unlocked6Stars, EventProgress.Stage0, RaidContent.Black, map, pk.ID32, 0, out var encounter, out var result))
+                {
+                    if (CompareResult(pk, result!.Value))
+                    {
+                        SetReultText(seed, encounter);
+                        return;
+                    }
+                }
+            }
+        }
+
+        //Events Raids Check
+        for (var content = RaidContent.Event; content <= RaidContent.Event_Mighty; content++)
+        {
+            foreach (var group in content is RaidContent.Event ? RaidCollection.AllDist : RaidCollection.AllMighty)
+            {
+                foreach (var index in new HashSet<byte>(group.Value.Select(enc => enc.Index)))
+                {
+                    for (var game = GameVersion.SL; game <= GameVersion.VL; ++game)
+                    {
+                        var possibleStages = new HashSet<EventProgress>(Enum.GetValues(typeof(EventProgress)).Cast<EventProgress>()
+                            .Where(progress => group.Value.Any(enc => enc.Index == index && enc.CanBeEncounteredFromStage(progress, game))));
+
+                        foreach (var stage in possibleStages)
+                        {
+                            if (EncounterRaidTF9.TryGenerateTeraDetails(seed, group.Value.ToArray(), game, GameProgress.UnlockedTeraRaids, stage, RaidContent.Event, TeraRaidMapParent.Paldea, pk.ID32, index, out var encounter, out var result))
+                            {
+                                if (CompareResult(pk, result!.Value))
+                                {
+                                    SetReultText(seed, encounter);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                } 
+            }
+        }
+
+        SetReultText(seed);
+    }
+
+    private static bool CompareResult (PK9 pkm, TeraDetails rng)
+    {
+        if (pkm.Species != rng.Species)
+            return false;
+        if (pkm.EncryptionConstant != rng.EC)
+            return false;
+        if (pkm.PID != rng.PID)
+            return false;
+        if (pkm.IV_HP != rng.HP)
+            return false;
+        if (pkm.IV_ATK != rng.ATK)
+            return false;
+        if (pkm.IV_DEF != rng.DEF)
+            return false;
+        if (pkm.IV_SPA != rng.SPA)
+            return false;
+        if (pkm.IV_SPD != rng.SPD)
+            return false;
+        if (pkm.IV_SPE != rng.SPE)
+            return false;
+        if (pkm.Nature != rng.Nature)
+            return false;
+        if ((sbyte)pkm.TeraTypeOriginal != rng.TeraType)
+            return false;
+        if (pkm.HeightScalar != rng.Height &&
+            pkm.HeightScalar != rng.Scale)
+            return false;
+        if (pkm.WeightScalar != rng.Weight)
+            return false;
+        if (pkm.Scale != rng.Scale)
+            return false;
+
+        return true;
+    }
+
+    private void SetReultText (uint seed, EncounterRaidTF9? encounter = null)
+    {
+        if (encounter is not null)
+        {
+            if (encounter.ContentType is RaidContent.Standard)
+                txtSeed.Text = $"{seed:X8} ({Strings["RaidContent.Standard"]})";
+            else if (encounter.ContentType is RaidContent.Black)
+                txtSeed.Text = $"{seed:X8} ({Strings["RaidContent.Black"]})";
+            else if (encounter.ContentType is RaidContent.Event)
+                txtSeed.Text = $"{seed:X8} ({Strings["RaidContent.Event"]})";
+            else if (encounter.ContentType is RaidContent.Event_Mighty)
+                txtSeed.Text = $"{seed:X8} ({Strings["RaidContent.Event_Mighty"]})";
+
+            return;
+        }
+
+        txtSeed.Text = $"{seed:X8} ({Strings["RaidContent.Invalid"]})";
+        return;
+
     }
 }

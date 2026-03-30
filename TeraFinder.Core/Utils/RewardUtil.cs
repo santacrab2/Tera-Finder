@@ -5,26 +5,32 @@ namespace TeraFinder.Core;
 
 public static class RewardUtil
 {
-    public static readonly string[] TeraShard = ["テラピ", "Tera Shard", "Téra-Éclat", "Teralite", "Tera-Stück", "Teralito", "테라피스", "晶碎块", "晶碎塊"];
-    public static readonly string[] Material = ["おとしもの", "Material", "Échantillons", "Materiali", "Materialentasche", "Materiales", "掉落物", "掉落物", "掉落物"];
+    public const ushort PokeMaterialIdentifier = ushort.MaxValue;
+    public const ushort TeraShardIdentifier = ushort.MaxValue - 1;
+    public const ushort HerbaMysticaIdentifier = ushort.MaxValue - 2;
 
-    public static Dictionary<ulong, List<Reward>>[] GetTeraRewardsTables()
+    public static List<Reward> GetCombinedRewardList(TeraDetails rng, List<Reward> fixedRewards, List<Reward> lotteryRewards, int boost = 0)
     {
-        var drops = JsonSerializer.Deserialize<pkNX.Structures.FlatBuffers.SV.DeliveryRaidFixedRewardItemArray>(Properties.Resources.raid_fixed_reward_item_array)!;
-        var lottery = JsonSerializer.Deserialize<pkNX.Structures.FlatBuffers.SV.DeliveryRaidLotteryRewardItemArray>(Properties.Resources.raid_lottery_reward_item_array)!;
-        var fixedTable = GetFixedTable(drops.Table);
-        var lotteryTable = GetLotteryTable(lottery.Table);
-        return [fixedTable, lotteryTable];
+        var lotteryrng = CalculateLotteryRNG(rng, lotteryRewards, boost);
+        var list = new List<Reward>();
+        list.AddRange(fixedRewards);
+        list.AddRange(lotteryrng);
+        return list;
     }
 
-    public static Dictionary<ulong, List<Reward>>[] GetDistRewardsTables(SAV9SV sav)
+    public static (Dictionary<ulong, List<Reward>> fixedRewardTable, Dictionary<ulong, List<Reward>> lotteryRewardTable) GetTeraRewardsTables()
     {
-        var rewards = EventUtil.GetEventItemDataFromSAV(sav);
-        var drops = JsonSerializer.Deserialize<pkNX.Structures.FlatBuffers.SV.DeliveryRaidFixedRewardItemArray>(rewards[0])!;
-        var lottery = JsonSerializer.Deserialize<pkNX.Structures.FlatBuffers.SV.DeliveryRaidLotteryRewardItemArray>(rewards[1])!;
-        var fixedTable = GetFixedTable(drops.Table);
-        var lotteryTable = GetLotteryTable(lottery.Table);
-        return [fixedTable, lotteryTable];
+        var drops = JsonSerializer.Deserialize<pkNX.Structures.FlatBuffers.SV.DeliveryRaidFixedRewardItemArray>(ResourcesUtil.GetFixedRewardsData())!;
+        var lottery = JsonSerializer.Deserialize<pkNX.Structures.FlatBuffers.SV.DeliveryRaidLotteryRewardItemArray>(ResourcesUtil.GetLotteryRewardsData())!;
+        return (GetFixedTable(drops.Table), GetLotteryTable(lottery.Table));
+    }
+
+    public static (Dictionary<ulong, List<Reward>> fixedDistRewardTable, Dictionary<ulong, List<Reward>> lotteryDistRewardTable) GetDistRewardsTables(SAV9SV sav)
+    {
+        var (distRewards, mightyRewards) = EventUtil.GetCurrentEventRewards(sav);
+        var drops = JsonSerializer.Deserialize<pkNX.Structures.FlatBuffers.SV.DeliveryRaidFixedRewardItemArray>(distRewards)!;
+        var lottery = JsonSerializer.Deserialize<pkNX.Structures.FlatBuffers.SV.DeliveryRaidLotteryRewardItemArray>(mightyRewards)!;
+        return (GetFixedTable(drops.Table), GetLotteryTable(lottery.Table));
     }
 
     public static bool IsTM(int item) => item switch
@@ -48,7 +54,36 @@ public static class RewardUtil
         };
     }
 
-    private static int GetTeraShard(MoveType type)
+    public static void ReplaceMaterialReward(this List<Reward> rewards, Species species)
+    {
+        for (var i = 0; i < rewards.Count; i++)
+        {
+            switch (rewards[i].ItemID)
+            {
+                case PokeMaterialIdentifier:
+                    rewards[i].ItemID = GetMaterial(species);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public static bool IsHerbaMystica(int item) => item switch
+    {
+        HerbaMysticaIdentifier => true,
+        >= 1904 and <= 1908 => true,
+        _ => false,
+    };
+
+    public static bool IsTeraShard(int item) => item switch
+    {
+        TeraShardIdentifier => true,
+        >= 1862 and <= 1879 => true,
+        _ => false,
+    };
+
+    public static int GetTeraShard(MoveType type)
     {
         return type switch
         {
@@ -70,7 +105,7 @@ public static class RewardUtil
             MoveType.Dragon => 1876,
             MoveType.Dark => 1877,
             MoveType.Fairy => 1879,
-            _ => ushort.MaxValue - 1,
+            _ => throw new NotImplementedException(nameof(type)),
         };
     }
 
@@ -352,82 +387,29 @@ public static class RewardUtil
             Species.IronTreads or Species.IronBundle or Species.IronHands or Species.IronJugulis or Species.IronMoth 
             or Species.IronThorns or Species.IronValiant or Species.IronLeaves or Species.IronBoulder or Species.IronCrown => 0,
 
-            _ => ushort.MaxValue,
+            _ => 0,
         };
     }
-
 
     //Slightly modified from https://github.com/LegoFigure11/RaidCrawler/blob/06a7f4c17fca74297d6199f37a171f2b480d40f0/Structures/RaidRewards.cs#L10
     //GPL v3 License
     //Thanks LegoFigure11 & Architdate!
-    public static List<Reward> GetRewardList(TeraDetails pkm, ulong fixedhash, ulong lotteryhash, Dictionary<ulong, List<Reward>>? fixedic = null, Dictionary<ulong, List<Reward>>? lotterydic = null, int boost = 0)
+    private static List<Reward> CalculateLotteryRNG(TeraDetails rng, List<Reward> lotterylist, int boost = 0)
     {
         var rewardlist = new List<Reward>();
-        var fixedlist = new List<Reward>();
-        var lotterylist = new List<Reward>();
-
-        var fixedexists = fixedic is not null && fixedic.TryGetValue(fixedhash, out fixedlist);
-        var lotteryexists = lotterydic is not null && lotterydic.TryGetValue(lotteryhash, out lotterylist);
-
-        if (fixedexists)
+        var xoro = new Xoroshiro128Plus(rng.Seed);
+        var amount = GetRewardCount(xoro.NextInt(100), rng.Stars) + boost;
+        for (var i = 0; i < amount; i++)
         {
-            foreach (var reward in fixedlist!)
+            var treshold = (int)xoro.NextInt((ulong)lotterylist[0].Aux);
+            foreach (var reward in lotterylist)
             {
-                rewardlist.Add(reward.ItemID == ushort.MaxValue ? new Reward { ItemID = GetMaterial((Species)pkm.Species), Amount = reward.Amount, Aux = reward.Aux } :
-                    reward.ItemID == ushort.MaxValue - 1 ? new Reward { ItemID = GetTeraShard((MoveType)pkm.TeraType), Amount = reward.Amount, Aux = reward.Aux } : reward);
-            }
-        }
-        if (lotteryexists)
-        {
-            var xoro = new Xoroshiro128Plus(pkm.Seed);
-            var amount = GetRewardCount(xoro.NextInt(100), pkm.Stars) + boost;
-            for (var i = 0; i < amount; i++)
-            {
-                var treshold = (int)xoro.NextInt((ulong)lotterylist!.ElementAt(0).Aux);
-                foreach (var reward in lotterylist!)
+                if (reward.Probability > treshold)
                 {
-                    if (reward.Probability > treshold)
-                    {
-                        rewardlist.Add(reward.ItemID == ushort.MaxValue ? new Reward { ItemID = GetMaterial((Species)pkm.Species), Amount = reward.Amount } :
-                            reward.ItemID == ushort.MaxValue - 1 ? new Reward { ItemID = GetTeraShard((MoveType)pkm.TeraType), Amount = reward.Amount } : reward);
-                        break;
-                    }
-                    treshold -= reward.Probability;
+                    rewardlist.Add(reward);
+                    break;
                 }
-            }
-        }
-        return rewardlist;
-    }
-
-    public static List<Reward> GetRewardList(uint seed, ushort species, int stars, ulong fixedhash, ulong lotteryhash, Dictionary<ulong, List<Reward>>? fixedic = null, Dictionary<ulong, List<Reward>>? lotterydic = null, int boost = 0)
-    {
-        var rewardlist = new List<Reward>();
-        var fixedlist = new List<Reward>();
-        var lotterylist = new List<Reward>();
-
-        var fixedexists = fixedic is not null && fixedic.TryGetValue(fixedhash, out fixedlist);
-        var lotteryexists = lotterydic is not null && lotterydic.TryGetValue(lotteryhash, out lotterylist);
-
-        if (fixedexists)
-            foreach (var reward in fixedlist!)
-                rewardlist.Add(reward.ItemID == ushort.MaxValue ? new Reward { ItemID = GetMaterial((Species)species), Amount = reward.Amount, Aux = reward.Aux } : reward);
-
-        if (lotteryexists)
-        {
-            var xoro = new Xoroshiro128Plus(seed);
-            var amount = GetRewardCount(xoro.NextInt(100), stars) + boost;
-            for (var i = 0; i < amount; i++)
-            {
-                var tres = (int)xoro.NextInt((ulong)lotterylist!.ElementAt(0).Aux);
-                foreach (var reward in lotterylist!)
-                {
-                    if (reward.Probability > tres)
-                    {
-                        rewardlist.Add(reward.ItemID == ushort.MaxValue ? new Reward { ItemID = GetMaterial((Species)species), Amount = reward.Amount } : reward);
-                        break;
-                    }
-                    tres -= reward.Probability;
-                }
+                treshold -= reward.Probability;
             }
         }
         return rewardlist;
@@ -484,7 +466,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem00.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem00.SubjectType,
@@ -494,7 +476,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem00.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem00.SubjectType,
@@ -514,7 +496,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem01.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem01.SubjectType,
@@ -524,7 +506,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem01.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem01.SubjectType,
@@ -544,7 +526,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem02.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem02.SubjectType,
@@ -554,7 +536,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem02.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem02.SubjectType,
@@ -574,7 +556,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem03.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem03.SubjectType,
@@ -584,7 +566,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem03.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem03.SubjectType,
@@ -604,7 +586,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem04.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem04.SubjectType,
@@ -614,7 +596,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem04.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem04.SubjectType,
@@ -634,7 +616,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem05.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem05.SubjectType,
@@ -644,7 +626,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem05.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem05.SubjectType,
@@ -664,7 +646,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem06.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem06.SubjectType,
@@ -674,7 +656,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem06.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem06.SubjectType,
@@ -694,7 +676,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem07.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem07.SubjectType,
@@ -704,7 +686,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem07.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem07.SubjectType,
@@ -724,7 +706,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem08.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem08.SubjectType,
@@ -734,7 +716,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem08.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem08.SubjectType,
@@ -754,7 +736,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem09.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem09.SubjectType,
@@ -764,7 +746,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem09.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem09.SubjectType,
@@ -784,7 +766,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem10.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem10.SubjectType,
@@ -794,7 +776,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem10.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem10.SubjectType,
@@ -814,7 +796,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem11.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem11.SubjectType,
@@ -824,7 +806,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem11.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem11.SubjectType,
@@ -844,7 +826,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem12.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem12.SubjectType,
@@ -854,7 +836,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem12.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem12.SubjectType,
@@ -874,7 +856,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem13.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem13.SubjectType,
@@ -884,7 +866,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem13.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem13.SubjectType,
@@ -904,7 +886,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = d.RewardItem14.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem14.SubjectType,
@@ -914,7 +896,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = d.RewardItem14.Num,
                     Probability = 100,
                     Aux = (int)d.RewardItem14.SubjectType,
@@ -987,7 +969,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem00.Num,
                     Probability = l.RewardItem00.Rate
                 });
@@ -996,7 +978,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem00.Num,
                     Probability = l.RewardItem00.Rate,
                 });
@@ -1016,7 +998,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem01.Num,
                     Probability = l.RewardItem01.Rate
                 });
@@ -1025,7 +1007,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem01.Num,
                     Probability = l.RewardItem01.Rate,
                 });
@@ -1045,7 +1027,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem02.Num,
                     Probability = l.RewardItem02.Rate
                 });
@@ -1054,7 +1036,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem02.Num,
                     Probability = l.RewardItem02.Rate,
                 });
@@ -1074,7 +1056,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem03.Num,
                     Probability = l.RewardItem03.Rate
                 });
@@ -1083,7 +1065,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem03.Num,
                     Probability = l.RewardItem03.Rate,
                 });
@@ -1103,7 +1085,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem04.Num,
                     Probability = l.RewardItem04.Rate
                 });
@@ -1112,7 +1094,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem04.Num,
                     Probability = l.RewardItem04.Rate,
                 });
@@ -1132,7 +1114,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem05.Num,
                     Probability = l.RewardItem05.Rate
                 });
@@ -1141,7 +1123,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem05.Num,
                     Probability = l.RewardItem05.Rate,
                 });
@@ -1161,7 +1143,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem06.Num,
                     Probability = l.RewardItem06.Rate
                 });
@@ -1170,7 +1152,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem06.Num,
                     Probability = l.RewardItem06.Rate,
                 });
@@ -1190,7 +1172,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem07.Num,
                     Probability = l.RewardItem07.Rate
                 });
@@ -1199,7 +1181,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem07.Num,
                     Probability = l.RewardItem07.Rate,
                 });
@@ -1219,7 +1201,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem08.Num,
                     Probability = l.RewardItem08.Rate
                 });
@@ -1228,7 +1210,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem08.Num,
                     Probability = l.RewardItem08.Rate,
                 });
@@ -1248,7 +1230,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem09.Num,
                     Probability = l.RewardItem09.Rate
                 });
@@ -1257,7 +1239,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem09.Num,
                     Probability = l.RewardItem09.Rate,
                 });
@@ -1277,7 +1259,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem10.Num,
                     Probability = l.RewardItem10.Rate
                 });
@@ -1286,7 +1268,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem10.Num,
                     Probability = l.RewardItem10.Rate,
                 });
@@ -1306,7 +1288,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem11.Num,
                     Probability = l.RewardItem11.Rate
                 });
@@ -1315,7 +1297,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem11.Num,
                     Probability = l.RewardItem11.Rate,
                 });
@@ -1335,7 +1317,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem12.Num,
                     Probability = l.RewardItem12.Rate
                 });
@@ -1344,7 +1326,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem12.Num,
                     Probability = l.RewardItem12.Rate,
                 });
@@ -1364,7 +1346,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem13.Num,
                     Probability = l.RewardItem13.Rate
                 });
@@ -1373,7 +1355,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem13.Num,
                     Probability = l.RewardItem13.Rate,
                 });
@@ -1393,7 +1375,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem14.Num,
                     Probability = l.RewardItem14.Rate
                 });
@@ -1402,7 +1384,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem14.Num,
                     Probability = l.RewardItem14.Rate,
                 });
@@ -1422,7 +1404,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem15.Num,
                     Probability = l.RewardItem15.Rate
                 });
@@ -1431,7 +1413,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem15.Num,
                     Probability = l.RewardItem15.Rate,
                 });
@@ -1451,7 +1433,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem16.Num,
                     Probability = l.RewardItem16.Rate
                 });
@@ -1460,7 +1442,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem16.Num,
                     Probability = l.RewardItem16.Rate,
                 });
@@ -1480,7 +1462,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem17.Num,
                     Probability = l.RewardItem17.Rate
                 });
@@ -1489,7 +1471,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem17.Num,
                     Probability = l.RewardItem17.Rate,
                 });
@@ -1509,7 +1491,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem18.Num,
                     Probability = l.RewardItem18.Rate
                 });
@@ -1518,7 +1500,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem18.Num,
                     Probability = l.RewardItem18.Rate,
                 });
@@ -1538,7 +1520,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem19.Num,
                     Probability = l.RewardItem19.Rate
                 });
@@ -1547,7 +1529,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem19.Num,
                     Probability = l.RewardItem19.Rate,
                 });
@@ -1567,7 +1549,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem20.Num,
                     Probability = l.RewardItem20.Rate
                 });
@@ -1576,7 +1558,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem20.Num,
                     Probability = l.RewardItem20.Rate,
                 });
@@ -1596,7 +1578,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem21.Num,
                     Probability = l.RewardItem21.Rate
                 });
@@ -1605,7 +1587,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem21.Num,
                     Probability = l.RewardItem21.Rate,
                 });
@@ -1625,7 +1607,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem22.Num,
                     Probability = l.RewardItem22.Rate
                 });
@@ -1634,7 +1616,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem22.Num,
                     Probability = l.RewardItem22.Rate,
                 });
@@ -1654,7 +1636,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem23.Num,
                     Probability = l.RewardItem23.Rate
                 });
@@ -1663,7 +1645,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem23.Num,
                     Probability = l.RewardItem23.Rate,
                 });
@@ -1683,7 +1665,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem24.Num,
                     Probability = l.RewardItem24.Rate
                 });
@@ -1692,7 +1674,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem24.Num,
                     Probability = l.RewardItem24.Rate,
                 });
@@ -1712,7 +1694,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem25.Num,
                     Probability = l.RewardItem25.Rate
                 });
@@ -1721,7 +1703,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem25.Num,
                     Probability = l.RewardItem25.Rate,
                 });
@@ -1741,7 +1723,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem26.Num,
                     Probability = l.RewardItem26.Rate
                 });
@@ -1750,7 +1732,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem26.Num,
                     Probability = l.RewardItem26.Rate,
                 });
@@ -1770,7 +1752,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem27.Num,
                     Probability = l.RewardItem27.Rate
                 });
@@ -1779,7 +1761,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem27.Num,
                     Probability = l.RewardItem27.Rate,
                 });
@@ -1799,7 +1781,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem28.Num,
                     Probability = l.RewardItem28.Rate
                 });
@@ -1808,7 +1790,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem28.Num,
                     Probability = l.RewardItem28.Rate,
                 });
@@ -1828,7 +1810,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue - 1,
+                    ItemID = TeraShardIdentifier,
                     Amount = l.RewardItem29.Num,
                     Probability = l.RewardItem29.Rate
                 });
@@ -1837,7 +1819,7 @@ public static class RewardUtil
             {
                 items.Add(new Reward
                 {
-                    ItemID = ushort.MaxValue,
+                    ItemID = PokeMaterialIdentifier,
                     Amount = l.RewardItem29.Num,
                     Probability = l.RewardItem29.Rate,
                 });

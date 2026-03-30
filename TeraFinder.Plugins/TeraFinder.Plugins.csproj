@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0-windows7.0</TargetFramework>
+		<TargetFramework>net10.0-windows7.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -22,12 +22,12 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DebugType>embedded</DebugType>
-		<NoWarn>1701;1702;IDE1006</NoWarn>
+		<NoWarn>1701,1702,IDE1006,IDE0042,CA1829,CA2211,CS8629,CS8602</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<DebugType>embedded</DebugType>
-		<NoWarn>1701;1702;IDE1006</NoWarn>
+		<NoWarn>1701,1702,IDE1006,IDE0042,CA1829,CA2211,CS8629,CS8602</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -35,10 +35,11 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive; compile</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="LibUsbDotNet" Version="2.2.29" />
-		<PackageReference Include="NLog" Version="5.1.4" />
-		<PackageReference Include="Octokit" Version="9.0.0" />
-		<PackageReference Include="PKHeX.Core" Version="23.12.19" />
+		<PackageReference Include="FlatSharp.Runtime" Version="7.6.0" />
+		<PackageReference Include="LibUsbDotNet" Version="2.2.75" />
+		<PackageReference Include="NLog" Version="5.4.0" />
+		<PackageReference Include="Octokit" Version="14.0.0" />
+		<PackageReference Include="PKHeX.Core" Version="26.1.7" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -64,7 +65,25 @@
 			<HintPath>Resources\deps\PKHeX.Drawing.PokeSprite.dll</HintPath>
 		</Reference>
 		<Reference Include="SysBot.Base">
-			<HintPath>..\TeraFinder.Core\deps\SysBot.Base.dll</HintPath>
+			<HintPath>..\TeraFinder.RemoteExecutor\deps\SysBot.Base.dll</HintPath>
+		</Reference>
+		<Reference Include="pkNX.Structures">
+			<HintPath>..\TeraFinder.Core\deps\pkNX.Structures.dll</HintPath>
+		</Reference>
+		<Reference Include="pkNX.Structures.FlatBuffers">
+			<HintPath>..\TeraFinder.Core\deps\pkNX.Structures.FlatBuffers.dll</HintPath>
+		</Reference>
+		<Reference Include="pkNX.Structures.FlatBuffers.SV.Personal">
+			<HintPath>..\TeraFinder.Core\deps\pkNX.Structures.FlatBuffers.SV.Personal.dll</HintPath>
+		</Reference>
+		<Reference Include="pkNX.Structures.FlatBuffers.SV.Raid">
+			<HintPath>..\TeraFinder.Core\deps\pkNX.Structures.FlatBuffers.SV.Raid.dll</HintPath>
+		</Reference>
+		<Reference Include="pkNX.Structures.FlatBuffers.SV.Shared">
+			<HintPath>..\TeraFinder.Core\deps\pkNX.Structures.FlatBuffers.SV.Shared.dll</HintPath>
+		</Reference>
+		<Reference Include="pkNX.Structures.FlatBuffers.SV.World">
+			<HintPath>..\TeraFinder.Core\deps\pkNX.Structures.FlatBuffers.SV.World.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 
@@ -93,6 +112,7 @@
 			<Private>True</Private>
 			<CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
 		</ProjectReference>
+		<ProjectReference Include="..\TeraFinder.RemoteExecutor\TeraFinder.RemoteExecutor.csproj" />
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">

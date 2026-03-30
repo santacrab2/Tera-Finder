@@ -46,9 +46,11 @@
             openFileDialog = new OpenFileDialog();
             menuStrip1 = new MenuStrip();
             remoteConnectToolStripMenuItem = new ToolStripMenuItem();
-            btnRemoteConnect = new ToolStripMenuItem();
             languageToolStrip = new ToolStripMenuItem();
             cmbLanguage = new ToolStripComboBox();
+            btnRemoteConnect = new ToolStripMenuItem();
+            importNullRaid = new ToolStripMenuItem();
+            importNullOutbreak = new ToolStripMenuItem();
             lblEvent = new Label();
             grpSAV.SuspendLayout();
             grpTools.SuspendLayout();
@@ -62,7 +64,7 @@
             grpSAV.Controls.Add(txtSAV);
             grpSAV.Controls.Add(btnLoad);
             grpSAV.Controls.Add(btnExport);
-            grpSAV.Location = new Point(12, 43);
+            grpSAV.Location = new Point(11, 50);
             grpSAV.Name = "grpSAV";
             grpSAV.Size = new Size(463, 123);
             grpSAV.TabIndex = 0;
@@ -102,7 +104,7 @@
             // 
             grpTools.Controls.Add(grpStaticTools);
             grpTools.Controls.Add(grpSavTools);
-            grpTools.Location = new Point(12, 171);
+            grpTools.Location = new Point(11, 178);
             grpTools.Name = "grpTools";
             grpTools.Size = new Size(463, 331);
             grpTools.TabIndex = 1;
@@ -114,7 +116,7 @@
             grpStaticTools.Controls.Add(btnStartRewardCalc);
             grpStaticTools.Controls.Add(btnStartCalculator);
             grpStaticTools.Controls.Add(btnStartFinder);
-            grpStaticTools.Location = new Point(6, 198);
+            grpStaticTools.Location = new Point(6, 197);
             grpStaticTools.Name = "grpStaticTools";
             grpStaticTools.Size = new Size(451, 125);
             grpStaticTools.TabIndex = 3;
@@ -150,7 +152,7 @@
             btnStartFinder.TabIndex = 6;
             btnStartFinder.Text = "Seed Checker";
             btnStartFinder.UseVisualStyleBackColor = true;
-            btnStartFinder.Click += btnStartFinder_Click;
+            btnStartFinder.Click += btnStartSeedChecker_Click;
             // 
             // grpSavTools
             // 
@@ -212,29 +214,23 @@
             menuStrip1.Items.AddRange(new ToolStripItem[] { remoteConnectToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new Size(487, 28);
+            menuStrip1.Padding = new Padding(6, 3, 0, 3);
+            menuStrip1.Size = new Size(487, 30);
             menuStrip1.TabIndex = 2;
             menuStrip1.Text = "menuStrip1";
             // 
             // remoteConnectToolStripMenuItem
             // 
-            remoteConnectToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { btnRemoteConnect, languageToolStrip });
+            remoteConnectToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { languageToolStrip, btnRemoteConnect, importNullRaid, importNullOutbreak });
             remoteConnectToolStripMenuItem.Name = "remoteConnectToolStripMenuItem";
             remoteConnectToolStripMenuItem.Size = new Size(58, 24);
             remoteConnectToolStripMenuItem.Text = "Tools";
-            // 
-            // btnRemoteConnect
-            // 
-            btnRemoteConnect.Name = "btnRemoteConnect";
-            btnRemoteConnect.Size = new Size(271, 26);
-            btnRemoteConnect.Text = "Connect To Remote Device";
-            btnRemoteConnect.Click += btnRemoteConnect_Click;
             // 
             // languageToolStrip
             // 
             languageToolStrip.DropDownItems.AddRange(new ToolStripItem[] { cmbLanguage });
             languageToolStrip.Name = "languageToolStrip";
-            languageToolStrip.Size = new Size(271, 26);
+            languageToolStrip.Size = new Size(329, 26);
             languageToolStrip.Text = "Default Language";
             // 
             // cmbLanguage
@@ -244,11 +240,32 @@
             cmbLanguage.Size = new Size(121, 28);
             cmbLanguage.SelectedIndexChanged += LanguageChanged;
             // 
+            // btnRemoteConnect
+            // 
+            btnRemoteConnect.Name = "btnRemoteConnect";
+            btnRemoteConnect.Size = new Size(329, 26);
+            btnRemoteConnect.Text = "Connect To Remote Device";
+            btnRemoteConnect.Click += btnRemoteConnect_Click;
+            // 
+            // importNullRaid
+            // 
+            importNullRaid.Name = "importNullRaid";
+            importNullRaid.Size = new Size(329, 26);
+            importNullRaid.Text = "Import Empty (Null) Raid Event";
+            importNullRaid.Click += ImportNullRaid_Click;
+            // 
+            // importNullOutbreak
+            // 
+            importNullOutbreak.Name = "importNullOutbreak";
+            importNullOutbreak.Size = new Size(329, 26);
+            importNullOutbreak.Text = "Import Empty (Null) Outbreak Event";
+            importNullOutbreak.Click += ImportNullOutbreak_Click;
+            // 
             // lblEvent
             // 
             lblEvent.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             lblEvent.AutoSize = true;
-            lblEvent.Location = new Point(232, 20);
+            lblEvent.Location = new Point(104, 28);
             lblEvent.Name = "lblEvent";
             lblEvent.RightToLeft = RightToLeft.No;
             lblEvent.Size = new Size(243, 20);
@@ -261,7 +278,7 @@
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(487, 507);
+            ClientSize = new Size(487, 516);
             Controls.Add(lblEvent);
             Controls.Add(grpTools);
             Controls.Add(grpSAV);
@@ -272,6 +289,7 @@
             MinimizeBox = false;
             Name = "TeraFinderForm";
             RightToLeft = RightToLeft.No;
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Tera Finder ";
             EnabledChanged += FormEnabledChanged;
             DragDrop += FileDragDrop;
@@ -310,5 +328,7 @@
         private ToolStripMenuItem languageToolStrip;
         private ToolStripComboBox cmbLanguage;
         private Button btnEditOutbreaks;
+        private ToolStripMenuItem importNullRaid;
+        private ToolStripMenuItem importNullOutbreak;
     }
 }

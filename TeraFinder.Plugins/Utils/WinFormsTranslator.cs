@@ -1,5 +1,3 @@
-using PKHeX.Core;
-
 //Most of functions are taken from pkhex
 //https://github.com/kwsch/PKHeX/blob/master/PKHeX.WinForms/Util/WinFormsTranslator.cs
 
@@ -95,15 +93,15 @@ public static class WinFormsTranslator
     {
         var file = GetTranslationFileNameInternal(lang);
         // Check to see if a the translation file exists in the same folder as the executable
-        string externalLangPath = GetTranslationFileNameExternal(file);
+        string externalLangPath = GetTranslationFileNameExternal(lang);
         if (File.Exists(externalLangPath))
         {
             try { return File.ReadAllLines(externalLangPath); }
             catch { /* In use? Just return the internal resource. */ }
         }
 
-        var txt = Core.TeraUtil.GetTextResource(file);
-        return Util.LoadStringList(file, txt);
+        var txt = Core.ResourcesUtil.GetTextResource(file.Replace('-', '_'));
+        return txt is not null ? txt.Split("\r\n") : [];
     }
 
     private static IEnumerable<object> GetTranslatableControls(Control f)
